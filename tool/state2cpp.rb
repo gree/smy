@@ -107,25 +107,16 @@ source +=<<END
 #include "#{class_name}.h"
 #{cpp_head}
 
-#define TO_STRING() \\
-  _stateMachine.to_string()
-#define EXEC() \\
-  _stateMachine.Exec()
-#define SPAWN(state) \\
-  _stateMachine.Spawn(std::make_pair([&]{state();}, #state))
-#define SWITCH_TO(state) \\
-  _stateMachine.SwitchTo(std::make_pair([&]{state();}, #state))
-#define YIELD_TO(state) \\
-  _stateMachine.YieldTo(std::make_pair([&]{state();}, #state))
+#define TO_STRING()  _stateMachine.to_string()
+#define EXEC()  _stateMachine.Exec()
+#define SPAWN(state)  _stateMachine.Spawn(std::make_pair([&]{state();}, #state))
+#define SWITCH_TO(state) _stateMachine.SwitchTo(std::make_pair([&]{state();}, #state))
+#define YIELD_TO(state) _stateMachine.YieldTo(std::make_pair([&]{state();}, #state))
 #define EXIT() _stateMachine.Exit()
 
-std::string #{class_name}::DumpState() const {
-    return TO_STRING();
-}
+std::string #{class_name}::DumpState() const { return TO_STRING(); }
 
-void #{class_name}::ExecState() {
-    EXEC();
-}
+void #{class_name}::ExecState() { EXEC(); }
 
 void #{class_name}::StartState() {
 END
@@ -148,7 +139,6 @@ END
     source = ""
     source += <<END
 void #{class_name}::State#{n.name}() {
-
     //  TODO: Something to execute every frame while this state.
 
 END
@@ -214,7 +204,7 @@ END
         condition = link.condition
         if count == 0
           source += <<END
-    if (false) { //  #{condition}
+    if (false) {#{comment(condition)}
 END
         elsif link.condition.nil? && count == n.link.size-1
           source += <<END
