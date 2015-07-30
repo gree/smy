@@ -103,21 +103,18 @@ END
 
   sources = []
   source = ""
-source +=<<END
+  source +=<<END
 #include "#{class_name}.h"
+#include "StateMachineMacros.h"
 #{cpp_head}
+END
 
-#define TO_STRING()  _stateMachine.to_string()
-#define EXEC()  _stateMachine.Exec()
-#define SPAWN(state)  _stateMachine.Spawn(std::make_pair([&]{state();}, #state))
-#define SWITCH_TO(state) _stateMachine.SwitchTo(std::make_pair([&]{state();}, #state))
-#define YIELD_TO(state) _stateMachine.YieldTo(std::make_pair([&]{state();}, #state))
-#define EXIT() _stateMachine.Exit()
+  sources << [nil, source]
+  source = ""
 
+  source +=<<END
 std::string #{class_name}::DumpState() const { return TO_STRING(); }
-
 void #{class_name}::ExecState() { EXEC(); }
-
 void #{class_name}::StartState() {
 END
 
@@ -133,7 +130,7 @@ END
 }
 END
 
-  sources << [nil, source]
+  sources << ["__common__", source]
 
   data.nodes.each do |n|
     source = ""
@@ -233,6 +230,7 @@ END
 
   old_sources = {}
   old_disabled = ""
+  old_head = ""
 
   if File.exist?(cpp_path)
     File.open(cpp_path, "r:UTF-8") { | file |
@@ -240,11 +238,23 @@ END
       hash = nil
       name = nil
       is_disabled = false
+      is_common = false
       while l = file.gets
         if l =~ /\/\/\s*\[state2cpp\]__disabled__/
           is_disabled = true
+          is_common = false
+          unless name.nil?
+            old_sources[name] = [hash, source.strip()+"\n"]
+          end
+          source = ""
+        elsif l =~ /\/\/\s*\[state2cpp\]__common__/
+          is_disabled = false
+          is_common = true
+          old_head = source
+          source = ""
         elsif l =~ /\/\/\s*\[state2cpp\]([^:]+):(\w+)/
           is_disabled = false
+          is_common = false
           unless name.nil?
             old_sources[name] = [hash, source.strip()+"\n"]
           end
@@ -252,7 +262,9 @@ END
           hash = $2
           source = ""
         else
-          if is_disabled
+          if is_common
+            #do nothing
+          elsif is_disabled
             old_disabled << l
           else
             source << l
@@ -267,6 +279,13 @@ END
   File.open(cpp_path, "w:UTF-8") { | file |
     sources.each do | name, source |
       if name.nil?
+        if old_head.empty?
+          file.print source
+        else
+          file.print old_head
+        end
+      elsif name == "__common__"
+        file.print "\n// [state2cpp]__common__\n\n"
         file.print source
       else
         source_names << name
@@ -290,8 +309,13 @@ END
         end
       end
     end
+    first = true
     old_sources.each do | name, a |
       next if source_names.include?name
+      if first
+        file.print "\n// [state2cpp]__disabled__\n\n"
+        first = false
+      end
       file.print <<END
 #if 0 // deleted in the yaml file. Please remove this chunk.
 #{a[1]}

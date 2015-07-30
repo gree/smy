@@ -1,0 +1,6 @@
+#define TO_STRING() _stateMachine.to_string()
+#define EXEC() _stateMachine.Exec()
+#define SPAWN(state) _stateMachine.Spawn(std::make_pair([&] { state(); }, #state))
+#define SWITCH_TO(state) _stateMachine.SwitchTo(std::make_pair([&] { state(); }, #state))
+#define YIELD_TO(state) _stateMachine.YieldTo(std::make_pair([&] { state(); }, #state))
+#define EXIT() _stateMachine.Exit()

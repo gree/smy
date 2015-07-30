@@ -1,10 +1,8 @@
 #pragma once
+#include "stateMachine.h"
 namespace kms {
 
-public class Main {
-
-#include "MainState.h"
-
+class Main {
+#include "MainStates.h"
 };
-} // namespace kms
-
+}
