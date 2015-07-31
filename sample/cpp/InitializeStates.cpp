@@ -381,4 +381,5 @@ void Initialize::StateDevRequestXuidWait() {
 
     SWITCH_TO(StateCheckMaintenance);
 }
+// [state2cpp]__end__
 } // namespace kms

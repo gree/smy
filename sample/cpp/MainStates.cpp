@@ -139,4 +139,5 @@ void Main::StateWaitGame() {
         EXIT();
     }
 }
+// [state2cpp]__end__
 } // namespace kms

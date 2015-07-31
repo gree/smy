@@ -118,4 +118,5 @@ void Game::StateVisit() {
         SWITCH_TO(StateStartGame);
     }
 }
+// [state2cpp]__end__
 } // namespace kms

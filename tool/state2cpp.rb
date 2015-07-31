@@ -109,7 +109,7 @@ END
 #{cpp_head}
 END
 
-  sources << [nil, source]
+  sources << ["__head__", source]
   source = ""
 
   source +=<<END
@@ -229,48 +229,27 @@ END
   end
 
   old_sources = {}
-  old_disabled = ""
-  old_head = ""
 
   if File.exist?(cpp_path)
     File.open(cpp_path, "r:UTF-8") { | file |
-      source = ""
+      s = ""
       hash = nil
-      name = nil
-      is_disabled = false
-      is_common = false
+      name = "__head__"
       while l = file.gets
-        if l =~ /\/\/\s*\[state2cpp\]__disabled__/
-          is_disabled = true
-          is_common = false
-          unless name.nil?
-            old_sources[name] = [hash, source.strip()+"\n"]
-          end
-          source = ""
-        elsif l =~ /\/\/\s*\[state2cpp\]__common__/
-          is_disabled = false
-          is_common = true
-          old_head = source
-          source = ""
+        if l =~ /\/\/\s*\[state2cpp\](__\w+__)/
+          old_sources[name] = [hash, s.strip()+"\n"]
+          s = ""
+          name = $1
         elsif l =~ /\/\/\s*\[state2cpp\]([^:]+):(\w+)/
-          is_disabled = false
-          is_common = false
-          unless name.nil?
-            old_sources[name] = [hash, source.strip()+"\n"]
-          end
+          old_sources[name] = [hash, s.strip()+"\n"]
+          s = ""
           name = $1
           hash = $2
-          source = ""
         else
-          if is_common
-            #do nothing
-          elsif is_disabled
-            old_disabled << l
-          else
-            source << l
-          end
+          s << l
         end
       end
+      old_sources[name] = [hash, s.strip()+"\n"]
     }
   end
 
@@ -278,13 +257,14 @@ END
 
   File.open(cpp_path, "w:UTF-8") { | file |
     sources.each do | name, source |
-      if name.nil?
-        if old_head.empty?
-          file.print source
+      case name
+      when "__head__"
+        if old_sources.include?("__head__")
+          file.print old_sources["__head__"][1]
         else
-          file.print old_head
+          file.print source
         end
-      elsif name == "__common__"
+      when "__common__"
         file.print "\n// [state2cpp]__common__\n\n"
         file.print source
       else
@@ -297,32 +277,40 @@ END
           if hash == old_hash
             file.print old_source
           else
+            puts "#{cpp_path}: #{name} modified."
             file.print source
             file.print <<END
-#if 0 // yaml file is modified. Please remove this chunk.
+#if 0 //  TODO: yaml file is modified. Please remove this chunk.
 #{old_sources[name][1]}
 #endif
 END
           end
         else
+          puts "#{cpp_path}: #{name} created."
           file.print source
         end
       end
     end
+
     first = true
     old_sources.each do | name, a |
       next if source_names.include?name
+      next if name.start_with?("__")
       if first
         file.print "\n// [state2cpp]__disabled__\n\n"
         first = false
       end
+      puts "#{cpp_path}: #{name} deleted."
       file.print <<END
-#if 0 // deleted in the yaml file. Please remove this chunk.
+#if 0 //  TODO: Please remove this chunk. #{name} is deleted from the yml file. 
 #{a[1]}
 #endif
-#{old_disabled}
 END
     end
+    if old_sources.include?"__disabled__"
+      file.print(old_sources["__disabled__"][1])
+    end
+    file.print("// [state2cpp]__end__\n")
     file.print(cpp_foot)
   }
 end
