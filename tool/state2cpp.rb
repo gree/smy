@@ -171,15 +171,7 @@ END
       end
     else
       count = 0
-      n.link.sort{|a,b|
-        if a.condition.nil? == b.condition.nil?
-          a.to.name <=> b.to.name
-        elsif a.condition.nil?
-          1
-        else
-          -1
-        end
-      }.each do | link |
+      n.link.each do | link |
         if link.spawn
           source += <<END
     SPAWN(State#{link.to.name});
@@ -188,15 +180,7 @@ END
         end
       end
 
-      n.link.sort{|a,b|
-        if a.condition.nil? == b.condition.nil?
-          a.to.name <=> b.to.name
-        elsif a.condition.nil?
-          1
-        else
-          -1
-        end
-      }.each do | link |
+      n.link.each do | link |
         next if link.spawn
         condition = link.condition
         if count == 0

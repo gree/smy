@@ -54,6 +54,8 @@ class YamlState
     nodes_hash = {}
     data.each do | name_from, lines |
       nodes_hash[name_from] = Node.new(name_from)
+    end
+    data.each do | name_from, lines |
       next if lines.nil?
       lines.each do | name_to, comment |
         nodes_hash[name_to] = Node.new(name_to)
