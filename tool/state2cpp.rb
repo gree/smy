@@ -29,7 +29,7 @@ require_relative 'yamlstate.rb'
       else
         weight = "1"
         weight = "0.01" if link.from.rlink.empty? || link.to.link.empty?
-        g.add_edges(nodes[link.from.name], nodes[link.to.name], :weight => weight, :label => link.condition + "?", :style => "dotted")
+        g.add_edges(nodes[link.from.name], nodes[link.to.name], :weight => weight, :label => link.condition , :style => "dotted")
       end
     end
   end
@@ -47,6 +47,7 @@ def state2cpp(yaml_file)
   cpp_head = ""
   cpp_foot = ""
   h_template = ""
+  cpp_template = ""
   dst_dir = "."
 
   if File.exist?(conf_file)
@@ -55,6 +56,7 @@ def state2cpp(yaml_file)
     cpp_foot = data["cpp_foot"] || ""
     dst_dir = yaml_dir + "/" + data["dst_dir"] || "."
     h_template = data["h_template"] || ""
+    cpp_template = data["cpp_template"] || ""
   end
 
   cpp_path = "#{dst_dir}/#{class_name}States.cpp"
@@ -68,7 +70,14 @@ def state2cpp(yaml_file)
 END
     }
   end
-
+  class_cpp_path = "#{dst_dir}/#{class_name}.cpp"
+  unless File.exist?(class_cpp_path)
+    File.open(class_cpp_path, "w:UTF-8") { | file |
+        file.print <<END
+#{cpp_template.gsub("_CLASS_NAME_", class_name)}
+END
+    }
+  end
   data = YamlState.new
   data.add(yaml_file)
   export_graph(data, class_name, yaml_dir)
