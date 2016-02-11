@@ -9,7 +9,7 @@ require_relative 'yamlstate.rb'
   if condition.nil? || condition.empty? 
     ""
   else
-    "  //  #{condition}?"
+    "// #{condition}"
   end
  end
 
@@ -92,18 +92,18 @@ END
 // [state2cpp] please include this file ins the declaration of class #{class_name}.
 
 private:
-  StateMachine _stateMachine;
+    StateMachine _stateMachine;
 public:
-  void StartState();
-  void ExecState();
-  std::string DumpState() const;
+    void StartState();
+    void ExecState();
+    std::string DumpState() const;
 
 private:
 END
 
   data.nodes.each do |n|
     header +=<<END
-  void State#{n.name}();
+    void State#{n.name}();
 END
   end
   File.open(h_path, "w:UTF-8") { | file |
