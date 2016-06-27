@@ -39,7 +39,7 @@ YAMLが完成したらコンバートしてコードとグラフが生成され�
 - {ステート名}.pdf
 - {ステート名}.svg
 
-ちなみに図は以下のようになる。([smy-flappy-cocos2dx](https://github.com/gree/smy-flappy-cocos2dx)の例)
+ちなみに図は以下のようになる。([smy-flappy-cocos2dx](https://github.com/gree/smy-flappy-cocos2dx)の例)  
 ![](https://raw.githubusercontent.com/gree/smy-flappy-cocos2dx/master/StateMachine/Main.png)
 
 コードは以下のものが生成される。
